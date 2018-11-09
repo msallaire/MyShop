@@ -13,6 +13,7 @@ namespace MyShop.Core.Models
         public string Id { get; set; }
         [StringLength(20)]
         [DisplayName("Product Name")]
+        [Required]
         public string Name { get; set; }
         public string Description { get; set; }
         [Range(0, 1000)] 
