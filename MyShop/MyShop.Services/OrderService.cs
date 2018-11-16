@@ -29,9 +29,10 @@ namespace MyShop.Services
                     ProductName = item.ProductName,
                     Quantity = item.Quantity
                 });
-                orderContext.Insert(baseOrder);
-                orderContext.Commit();
+
             }
+            orderContext.Insert(baseOrder);
+            orderContext.Commit();
         }
     }
 }
