@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Principal;
 using System.Web.Mvc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MyShop.Core.Contracts;
@@ -21,11 +22,13 @@ namespace MyShop.WebUI.Tests.Controllers
             MockContext<Basket> baskets = new MockContext<Basket>();
             IRepository<Product> products = new MockContext<Product>();
             IRepository<Order> orders = new MockContext<Order>();
+            IRepository<Customer> customers = new MockContext<Customer>();
+
             var httpContext = new MockHttpContext();
 
             IBasketService basketService = new BasketService(products, baskets);
             IOrderService orderService = new OrderService(orders);
-            var controller = new BasketController(basketService, orderService);//test thru controller
+            var controller = new BasketController(basketService, orderService, customers);//test thru controller
             controller.ControllerContext = new System.Web.Mvc.ControllerContext(httpContext, new System.Web.Routing.RouteData(), controller);
             //Act
             //basketService.AddToBasket(httpContext, "1"); //test basketService not thru controller
@@ -44,6 +47,7 @@ namespace MyShop.WebUI.Tests.Controllers
             MockContext<Basket> baskets = new MockContext<Basket>();
             IRepository<Product> products = new MockContext<Product>();
             IRepository<Order> orders = new MockContext<Order>();
+            IRepository<Customer> customers = new MockContext<Customer>();
 
             products.Insert(new Product() { Id = "1", Price = 12.00m });
             products.Insert(new Product() { Id = "2", Price = 23.12m });
@@ -56,7 +60,7 @@ namespace MyShop.WebUI.Tests.Controllers
             IBasketService basketService = new BasketService(products, baskets);
             IOrderService orderService = new OrderService(orders);
 
-            var controller = new BasketController(basketService, orderService);
+            var controller = new BasketController(basketService, orderService, customers);
             var httpContext = new MockHttpContext();
             httpContext.Request.Cookies.Add(new System.Web.HttpCookie("eCommerceBasket", basket.Id));
             controller.ControllerContext = new System.Web.Mvc.ControllerContext(httpContext, new System.Web.Routing.RouteData(), controller);
@@ -73,7 +77,9 @@ namespace MyShop.WebUI.Tests.Controllers
         {
             IRepository<Product> products = new MockContext<Product>();
             IRepository<Order> orders = new MockContext<Order>();
+            IRepository<Customer> customers = new MockContext<Customer>();
             MockContext<Basket> baskets = new MockContext<Basket>();
+
 
             products.Insert(new Product() { Id = "1", Price = 10.00m });
             products.Insert(new Product() { Id = "2", Price = 5.00m });
@@ -83,11 +89,16 @@ namespace MyShop.WebUI.Tests.Controllers
             basket.BasketItems.Add(new BasketItem() { ProductId = "2", Quantity = 1, BasketId=basket.Id });
             baskets.Insert(basket);
 
-            BasketService basketService = new BasketService(products, baskets);
-            OrderService orderService = new OrderService(orders);
+            IBasketService basketService = new BasketService(products, baskets);
+            IOrderService orderService = new OrderService(orders);
 
-            var controller = new BasketController(basketService, orderService);
+            customers.Insert(new Customer() { Id = "1", Email = "smerialla@gmail.com", ZipCode = "43220" });
+
+            IPrincipal FakeUser = new GenericPrincipal(new GenericIdentity("smerialla@gmail.com", "Forms"), null);
+
+            var controller = new BasketController(basketService, orderService, customers);
             var httpContext = new MockHttpContext();
+            httpContext.User = FakeUser;
             httpContext.Request.Cookies.Add(new System.Web.HttpCookie("eCommercebasket", basket.Id ));
             controller.ControllerContext = new ControllerContext(httpContext, new System.Web.Routing.RouteData(), controller);
             //Act
